@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        .chat {
+            display: flex;
+            flex-direction: column;
+        }
+        .chat span {
+            margin-bottom: 10px;
+        }
+        form {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat"></div>
+    <div>
+        <form>
+            <input type="text" placeholder="insira seu nome">
+            <input type="text" placeholder="insira sua mensagem">
+            <button type="submit">Enviar</button>
+        </form>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+    <script>
+        window.onload = function() {
+            const socket = io('http://127.0.0.1:5000');
+
+            function addToChat(msg) {
+                const span = document.createElement("span");
+                const chat = document.querySelector(".chat");
+                span.innerHTML = `<strong>${msg.name}:</strong> ${msg.message}`;
+                chat.append(span);
+            }
+
+            socket.on('connect', () => {
+                socket.send('Usuário conectado ao socket!')
+            });
+
+            document.querySelector("form").addEventListener("submit", function(event) {
+                event.preventDefault();
+
+                socket.emit('sendMessage', {name: event.target[0].value, message: event.target[1].value})
+                event.target[0].value = "";
+                event.target[1].value = "";
+            })
+
+            socket.on('getMessage', (msg) => {
+                addToChat(msg)
+            })
+
+            
+            socket.on('message', (msgs) => {
+                for(msg of msgs) {
+                    addToChat(msg)
+                }
+            })
+
+        }
+
+    </script>
+</body>
+</html>
